@@ -21,11 +21,11 @@ Using the hottest new technology we built **JumpNote** using ***React Native*** 
 
 ### Download
 
-- You can [download](https://github.com/SRJC-Computer-Science-Club/Note_Taking_App/archive/master.zip) latest installable version of JumpNote for Windows, macOS and Linux.
+- You can [download](https://github.com/SRJC-Computer-Science-Club/jumpnotes/archive/master.zip) latest installable version of JumpNote for Windows, macOS and Linux.
 
 - git clone the repo
 
-   > git clone https://github.com/SRJC-Computer-Science-Club/Note_Taking_App.git
+   > git clone https://github.com/SRJC-Computer-Science-Club/jumpnotes.git
 
 -----------
 ### Software Installation
@@ -60,14 +60,14 @@ Follow these instructions to get everything you need installed.
 To get started:
 
 - open up cmd( command prompt ) for windows, terminal for Mac and Linux
-- Download [This file](https://github.com/SRJC-Computer-Science-Club/Note_Taking_App/archive/master.zip)
+- Download [This file](https://github.com/SRJC-Computer-Science-Club/jumpnotes/archive/master.zip)
 -  Go to you Downloads folder
 -  Unzip  
    >Note_Taking_App.zip
       Clone this repository
-    > git clone https://github.com/SRJC-Computer-Science-Club/Note_Taking_App.git
+    > git clone https://github.com/SRJC-Computer-Science-Club/jumpnotes.git
     
-  -  If `git` is not installed it can be download [here]()
+  -  If `git` is not installed it can be download [here](https://git-scm.com/download/)
   
  Go into the repository
     > cd Note_Taking_App
