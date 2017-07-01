@@ -1,6 +1,8 @@
 // port of client web addres for testing 
 var PORT = 3000;
+var databaseName = 'database';
 
+var url = "mongodb://localhost:27017/" + databaseName;
 
 
 
@@ -27,10 +29,10 @@ mongodb server running on localhost:27017
 
 var http = require('http');
 var express = require('express');
+var mongoClient = require('mongodb').MongoClient;
+var opn = require('opn');
 
-var MongoClient = require('mongodb').MongoClient;
-
-
+opn('http://localhost:'+PORT);
 /*
 
 
@@ -51,7 +53,7 @@ var socket = require('socket.io');
 var io = socket(server);
  
 
-console.log("JumpNotes Server Has Started!");
+console.log("JumpNotes is Running....");
 console.log("Address : http://localhost:" + PORT);
 
 
@@ -63,11 +65,7 @@ Create a socket that the client app connects to
 and every other client can acess
 
 */
-
-var clientSockets =  new Sockets();
-
-
-
+var clientConnection =  new Sockets();
 
 
 io.on('connection', newConnection);
@@ -75,19 +73,47 @@ io.on('connection', newConnection);
 
 function newConnection(socket){
     
-      clientSockets.add(socket);
+      clientConnection.add(socket);
+
 
       socket.on("text", function(data){
 
+        socket.emit('text',data);
 
-          printNote(data);
+         saveNotetoDatabase(data);      
+
+      });
 
 
-          saveNotetoDatabase(data);
+
+      //print to console if socket has tag print
+      socket.on("print", function(data){
+
+        socket.emit('print',data);
+
+        printDatabase();
+      });
 
 
-        }
-      );
+
+
+      socket.on("clear", function(data){
+
+        socket.emit('clear',data);
+          clearDatabase();
+      });
+
+
+
+/*
+      socket.on("delete", function(data){
+
+        socket.emit('delete',data);
+
+        deletePop();
+      });
+*/
+      
 }
 
 
@@ -102,7 +128,61 @@ takes json object and saves it to the
 mongodb database
 ----------------------
 */
-function saveNotetoDatabase(){
+function saveNotetoDatabase(data){
+    
+    try{
+
+        validateText(data);
+
+        //printNote(data);
+
+        mongoClient.connect(url, function(err,db){
+
+            db.collection(databaseName, function(err, collection){
+                if (err) throw err;
+
+                collection.insert(data);
+                db.close();
+              }
+            );
+          }
+        );
+    }catch(err){
+      console.log("ERROR : " + err);
+    }
+}
+
+
+
+
+
+
+
+
+/*
+----------------------
+Prints all items in database
+----------------------
+*/
+function printDatabase(data){
+
+ 
+   mongoClient.connect(url, function(err,db){
+
+      db.collection(databaseName, function(err, collection){
+
+          db.collection(databaseName).find().toArray(function (err, result) {
+
+           
+
+            db.collection(databaseName).count(function (err, count) {
+                  console.log(count);
+            });
+
+            printFormated(result)
+          });
+        });
+    });
 
 }
 
@@ -113,6 +193,123 @@ function saveNotetoDatabase(){
 
 
 
+
+
+
+/*
+----------------------
+clears everything in the database
+https://stackoverflow.com/questions/28454380/efficient-way-to-remove-all-entries-from-mongodb#28454476
+https://stackoverflow.com/questions/16743729/mongodb-find-if-a-collection-is-empty-node-js#16743950
+----------------------
+*/
+function clearDatabase(){
+var numOfnotes = 0;
+   mongoClient.connect(url, function (err, db) {
+        
+        db.collection(databaseName, function (err, collection) {
+
+         /* try{
+
+
+            db.collection(databaseName).count(function (err, count) {
+                numOfnotes = count;
+              });
+
+
+            if(numOfnotes === 0)
+             throw "Database us empty, nothing to clear";
+*/
+            print("Cleared database!");
+            db.collection(databaseName).remove({});
+
+/*
+           
+              
+          }catch(err){
+
+            print("ERROR : " + err);
+          }
+      
+*/
+        });
+                    
+    });
+}
+
+
+
+
+
+/*
+----------------------
+
+----------------------
+*/
+function deletePop(){
+  print("ToDo")
+}
+
+
+
+
+
+
+/*
+----------------------
+
+----------------------
+*/
+function printFormated(result){
+
+  var output = 'Note : ';
+
+  try{
+
+
+      if(result.length === 0){ 
+
+        throw "Database is empty, nothing to print";
+
+      }else{
+        
+        for( var i = 0; i < result.length; i++){
+
+          output +=  "\n" + result[i].title + "\n" + result[i].text + "\n " + "-----------" + "\n";
+
+        }
+
+        console.log( output );
+      }
+
+
+
+  }catch(err){
+
+    print("ERROR : " + err);
+
+  }
+}
+
+
+
+
+
+
+
+
+/*
+----------------------
+data validation
+----------------------
+*/
+function validateText(data){
+      if(data.title === null) throw "title is NULL!";
+      if(data.text === null) throw "text is NULL!";
+      if(typeof data.title !== 'string') throw "title is not a string";
+      if(typeof data.text !== 'string') throw "text is not a string";
+      if(data.title === '' && data.text === '') throw "Json object is empty!";
+}
 /*
 ----------------------
 takes in the json object 
@@ -181,4 +378,21 @@ Sockets.prototype.emit = function(name, data, except) {
       this.list[i].emit(name, data)
     }
   }
+}
+
+
+
+
+
+
+
+
+/*
+----------------------
+simple print function
+----------------------
+*/
+
+function print(text){
+  return console.log(text);
 }
