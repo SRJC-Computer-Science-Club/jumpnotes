@@ -79,7 +79,11 @@ function newConnection(socket){
 
       socket.on("text", function(data){
 
+
           printNote(data);
+
+
+          saveNotetoDatabase(data);
 
 
         }
