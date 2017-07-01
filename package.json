@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "start cmd /k mongod --dbpath data & node server.js"
   },
   "repository": {
     "type": "git",
@@ -31,6 +31,7 @@
   "dependencies": {
     "express": "^4.15.3",
     "mongodb": "^2.2.29",
+    "opn": "^5.1.0",
     "socket.io": "^2.0.3"
   },
   "devDependencies": {}

@@ -1,7 +1,12 @@
 var socket;
 
 
-var title, noteText, button;
+var title, 
+	noteText,
+	saveButton, 
+	printButton,
+	clearBtn,
+	deleteBtn;
 
 
 var defaultText = "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks";
@@ -27,7 +32,9 @@ function setup() {
 	noteInput(60);
 
 	sendButton();
-
+	printConsole();
+	clearButton();
+	//deleteButton();
 
 
   	setupSocket();
@@ -105,8 +112,18 @@ function  setupSocket(){
 
 		function(data) {
 			console.log("Note receive from server : " + data.title + ",    " + data.text);
-			fill(color(255,0,0));
-			rect(width/2,height/2, 50,50);
+
+			
+			fill(50);
+			rect(0,0, width,height);
+
+            fill(255);
+            textSize(32);
+
+			text(data.title, width/2, height/2 + 92 ); 
+			text(data.text, width/2, height/2 + 92 + 32); 
+
+
 	    }
 	  );
 }
@@ -124,9 +141,9 @@ function  setupSocket(){
 */
 function sendButton(){
 
-	button = createButton('Save');
-	button.position(width/2-50, height/2);
-	button.mousePressed(sendNoteToServer);
+	saveButton = createButton('Save');
+	saveButton.position(width/2-50, height/2);
+	saveButton.mousePressed(sendNoteToServer);
 
 
 }
@@ -137,7 +154,52 @@ function sendButton(){
 
 
 
+
+
 /*
+----------------------
+
+----------------------
+*/function printConsole(){
+
+	printButton = createButton('Print');
+	printButton.position(width/2-50, height/2+25);
+	printButton.mousePressed(printDatabase);
+
+
+}
+
+
+
+
+
+
+
+function clearButton(){
+
+	clearBtn = createButton('clear');
+	clearBtn.position(width/2-50, height/2+50);
+	clearBtn.mousePressed( clearDatabase);
+
+
+}
+
+
+
+
+
+/*
+
+
+function deleteButton(){
+
+	deleteBtn = createButton('delete');
+	deleteBtn.position(width/2-50, height/2+75);
+	deleteBtn.mousePressed( deleteDatabase);
+
+
+}
+
 ----------------------
 
 ----------------------
@@ -154,5 +216,55 @@ var  sendNoteToServer = function(){
 
 
 	socket.emit('text',note);
+
+}
+
+
+
+
+
+
+
+
+/*
+----------------------
+
+----------------------
+*/
+var  printDatabase = function(){
+	socket.emit('print',{});
+
+}
+
+
+
+
+
+
+
+/*
+----------------------
+
+----------------------
+
+var  deleteDatabase = function(){
+	socket.emit('delete',{});
+
+}
+
+*/
+
+
+
+
+
+
+/*
+----------------------
+
+----------------------
+*/
+var  clearDatabase = function(){
+	socket.emit('clear',{});
 
 }
