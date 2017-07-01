@@ -1,0 +1,37 @@
+{
+  "name": "jumpnotes",
+  "version": "1.0.0",
+  "description": "JumpNote is a Simple, Quick, Easy to use, Note taking app that \"auto-magically\" backups everything to a server. Using the hottest new technology we built JumpNote using React Native for the app frontend, Node.js for the backend server magic, and used Mongodb to implement our database.",
+  "main": "server.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SRJC-Computer-Science-Club/jumpnotes.git"
+  },
+  "keywords": [
+    "notes",
+    "simple",
+    "node.js",
+    "server",
+    "automatic",
+    "backup"
+  ],
+  "author": "oran collins",
+  "license": "SEE LICENSE IN /LICENSE",
+  "bugs": {
+    "url": "https://github.com/SRJC-Computer-Science-Club/jumpnotes/issues"
+  },
+  "homepage": "https://github.com/SRJC-Computer-Science-Club/jumpnotes#readme",
+  "dependencies": {
+    "express": "^4.15.3",
+    "mongodb": "^2.2.29",
+    "socket.io": "^2.0.3"
+  },
+  "devDependencies": {}
+}
