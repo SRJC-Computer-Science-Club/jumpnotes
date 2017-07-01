@@ -91,17 +91,7 @@ To get started:
 ----------
 How It Works
 -------
-
-```sequence
-Client->Server: JSON object: Data Request of 
-Note over Client: React Native App
-Server->Client:JSON object: Data Transmit
-    Note over Server: Node.js Server 
-Server->Database: Save JSON to Database
-Database->Server: Read JSON from Database
-    Note over Database: Mongodb Database
-
-```
+![Diagram of Dataflow](https://i.imgur.com/MgbII7K.png)
 
 *How the data flows from server and clients*
 
