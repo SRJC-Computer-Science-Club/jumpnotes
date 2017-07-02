@@ -4,7 +4,7 @@ var databaseName = 'database';
 
 var url = "mongodb://localhost:27017/" + databaseName;
 
-
+var cmd = 'start cmd /k mongod --dbpath data';
 
 
 
@@ -41,6 +41,12 @@ app.use(express.static()) - tells express to use the
 html file stored in the directory /public ie public/html
 socket - creates a socket.io socket for handing connections
 var io = socket(server);  - attaches a socket to the webserver
+
+d - is a domain that handls errors and makes sure they dont crash the server
+domain how to https://engineering.gosquared.com/error-handling-using-domains-node-js
+			  https://stackoverflow.com/questions/20689768/how-to-ensure-node-js-keeps-running-after-monogdb-connection-drops
+exec - executes a command ie restarting the mongodb server
+exec how to https://stackoverflow.com/questions/20643470/execute-a-command-line-binary-with-node-js#20643568
 */
 var app  = express();
 
@@ -51,7 +57,12 @@ app.use(express.static('public'));
 var socket = require('socket.io');
 
 var io = socket(server);
- 
+
+var d = require('domain').create();
+
+var exec = require('child_process').exec;
+
+
 
 console.log("JumpNotes is Running....");
 console.log("Address : http://localhost:" + PORT);
@@ -77,13 +88,16 @@ function newConnection(socket){
 
 
       socket.on("text", function(data){
+
       	print(" Data Resived : " );
+
       	print(data);
- 
 
-        socket.emit('text',data);
 
-         saveNotetoDatabase(data);      
+ 		socket.emit('text',data);
+
+
+ 		saveNotetoDatabase(data);   
 
       });
 
@@ -132,30 +146,70 @@ mongodb database
 ----------------------
 */
 function saveNotetoDatabase(data){
-    
-    try{
+   
 
-        validateText(data);
+/*
+//TODO error domains
 
-        //printNote(data);
 
-        mongoClient.connect(url, function(err,db){
+    d.run(function() {
 
-            db.collection(databaseName, function(err, collection){
-               if (err) throw err;
+			
 
-                db.collection(databaseName).insert(data);
-                db.close();
-              }
-            );
-          }
-        );
+			exec(cmd, function(error, stdout, stderr) {
+			  // command output is in stdout
+			});
 
-    }catch(err){
+	});
+*/	
 
-      console.log("ERROR : " + err);
+	    try{
 
-    }
+	        validateText(data);
+
+	        //printNote(data);
+
+	        mongoClient.connect(url, function(err,db){
+
+				if (err) throw err;
+
+	            db.collection(databaseName, function(err, collection){
+
+	               if (err) throw err;
+
+	                db.collection(databaseName).insert(data);
+	                db.close();
+	              }
+	            );
+	          }
+	        );
+
+	    }catch(err){
+
+	      console.log("ERROR : " + err);
+
+	    }
+
+
+
+
+
+
+
+
+/*
+//TODO error domains
+
+
+       d.on('error', function(er) {
+
+
+		print("ERROR : Can't connect to Database Server!");
+
+        //exec(cmd, function(error, stdout, stderr) {	});
+
+   		 });
+  */
 }
 
 
