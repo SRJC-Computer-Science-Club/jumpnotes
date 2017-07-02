@@ -267,8 +267,22 @@ to delete this note we send
 deleteNote({"id":5});
 ----------------------
 */
-function deleteNote(){
-  print("deleteNote : TODO NOT IMPLEMENTED!");
+function deleteNote(data){
+
+
+   mongoClient.connect(url, function(err,db){
+
+      db.collection(databaseName, function(err, collection){
+      	
+      	if(err){ print(err); }
+
+          db.collection(databaseName).remove(data);
+        
+        });
+    });
+
+
+  print("Deleted Note : " + data.id );
 }
 
 

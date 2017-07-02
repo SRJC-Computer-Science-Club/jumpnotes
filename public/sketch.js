@@ -241,7 +241,8 @@ function deleteButton(){
 var  sendNoteToServer = function(){
 	try{
 
-		
+		if(title.value() === "" && noteText.value() ==="") throw "Nothing to send, empty note";
+
 		var note = {
 			id: noteID,
 			title: title.value(),
@@ -259,7 +260,13 @@ var  sendNoteToServer = function(){
 
 
 	}catch(err){
+		
 		print("ERROR : " + err);
+
+
+    	if(err === "Nothing to send, empty note"){
+    		alert("ERROR : " + err);
+    	}
 	}
 }
 
@@ -293,12 +300,18 @@ var  printDatabase = function(){
 */
 var  deleteNote = function(){
 	try{
-		print(!isNumeric(idText.value()));
+
+		if( idText.value() === "" ) throw "No index selected";
+
 		if(  !isNumeric(idText.value()) ) throw "That is not at number";
 
-		console.log({"id": idText.value() });
+		var noteIndex = {
+			"id": parseInt(idText.value()) 
+		}
 
-		socket.emit('delete',{"id": idText.value() });
+		socket.emit('delete', noteIndex);
+
+		console.log(noteIndex);
 
 	}catch(err){
 
@@ -308,6 +321,9 @@ var  deleteNote = function(){
     		alert("ERROR : " + err);
     	}
 
+    	if(err === "No index selected"){
+    		alert("ERROR : " + err);
+    	}
 	}	
 		
 
