@@ -268,7 +268,7 @@ deleteNote({"id":5});
 ----------------------
 */
 function deleteNote(){
-  print("deleteNote!")
+  print("deleteNote : TODO NOT IMPLEMENTED!");
 }
 
 
