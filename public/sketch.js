@@ -112,6 +112,13 @@ create sockets and initialize there
 socket tags, 
 tags filter the data beeing sent on the server side
 
+how to create a action on socket tag incoming
+
+	socket.on('text', function(data){
+			console.log("Text Works");
+		}
+	);
+
 ----------------------
 */
 
@@ -120,11 +127,6 @@ function  setupSocket(){
 	//inisiate the connection to server
 	socket = io.connect('http://localhost:3000');
 
-	socket.on('text', function(data){
-			console.log("Text Works");
-		}
-	);
-
 
 
 
@@ -132,7 +134,8 @@ function  setupSocket(){
 	 
 
 		function(data) {
-			console.log("Note receive from server :\n ID :" + data.title + ",    " + data.text);
+
+			console.log("What was Saved To Server ID  \nID : " + data.id + ",\nTitle : " + data.title + ",\nText : " + data.text);
 
 			
 			fill(50);
@@ -250,17 +253,23 @@ var  sendNoteToServer = function(){
 		}
 		
 		noteID += 1;
+		
+		print("____________________________")
 
-		console.log("Sent note to server : ");// + title.value());
+		print("JSON Object sent to server : ");// + title.value());
 
 		print(note);
-		//print(parseInt(idText.value()));
+
+		print("____________________________")
+
+
+
 		socket.emit('text',note);
 
 
 
 	}catch(err){
-		
+
 		print("ERROR : " + err);
 
 
