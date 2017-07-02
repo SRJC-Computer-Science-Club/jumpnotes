@@ -77,6 +77,9 @@ function newConnection(socket){
 
 
       socket.on("text", function(data){
+      	print(" Data Resived : " );
+      	print(data);
+ 
 
         socket.emit('text',data);
 
@@ -105,14 +108,14 @@ function newConnection(socket){
 
 
 
-/*
+
       socket.on("delete", function(data){
 
         socket.emit('delete',data);
 
-        deletePop();
+        deleteNote(data);
       });
-*/
+
       
 }
 
@@ -139,16 +142,19 @@ function saveNotetoDatabase(data){
         mongoClient.connect(url, function(err,db){
 
             db.collection(databaseName, function(err, collection){
-                if (err) throw err;
+               if (err) throw err;
 
-                collection.insert(data);
+                db.collection(databaseName).insert(data);
                 db.close();
               }
             );
           }
         );
+
     }catch(err){
+
       console.log("ERROR : " + err);
+
     }
 }
 
@@ -241,14 +247,32 @@ var numOfnotes = 0;
 
 
 
+
+
+
 /*
 ----------------------
+Deletes a note in the database by 
+selecting the notes "id"
+example note to be deleted
 
+{
+    "id": 5,
+    "title": "My first Awesome Note!",
+    "noteText": "Idea for greate new book title Brave New World"
+}
+
+to delete this note we send
+
+deleteNote({"id":5});
 ----------------------
 */
-function deletePop(){
-  print("ToDo")
+function deleteNote(){
+  print("deleteNote!")
 }
+
+
+
 
 
 
@@ -275,7 +299,7 @@ function printFormated(result){
         
         for( var i = 0; i < result.length; i++){
 
-          output +=  "\n" + result[i].title + "\n" + result[i].text + "\n " + "-----------" + "\n";
+          output +=  "\n id: " + result[i].id + "\n" +result[i].title + "\n" + result[i].text + "\n " + "-----------" + "\n";
 
         }
 
@@ -304,11 +328,13 @@ data validation
 ----------------------
 */
 function validateText(data){
-      if(data.title === null) throw "title is NULL!";
-      if(data.text === null) throw "text is NULL!";
-      if(typeof data.title !== 'string') throw "title is not a string";
-      if(typeof data.text !== 'string') throw "text is not a string";
-      if(data.title === '' && data.text === '') throw "Json object is empty!";
+	if(data.id === null) throw "id is null";
+	if(!isNumeric(data.id)) throw "id is not a number";
+	if(data.title === null) throw "title is NULL!";
+	if(data.text === null) throw "text is NULL!";
+	if(typeof data.title !== 'string') throw "title is not a string";
+	if(typeof data.text !== 'string') throw "text is not a string";
+	if(data.title === '' && data.text === '') throw "Json object is empty!";
 }
 /*
 ----------------------
@@ -395,4 +421,20 @@ simple print function
 
 function print(text){
   return console.log(text);
+}
+
+
+
+
+
+
+
+
+/*
+----------------------
+https://stackoverflow.com/questions/18082/validate-decimal-numbers-in-javascript-isnumeric
+----------------------
+*/
+function isNumeric(n) {
+  return !isNaN(parseFloat(n)) && isFinite(n);
 }

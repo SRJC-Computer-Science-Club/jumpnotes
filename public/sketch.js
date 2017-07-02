@@ -6,7 +6,10 @@ var title,
 	saveButton, 
 	printButton,
 	clearBtn,
-	deleteBtn;
+	deleteBtn,
+	idText;
+
+var noteID = 0;
 
 
 var defaultText = "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks";
@@ -30,11 +33,12 @@ function setup() {
 
 	titleInput(0);
 	noteInput(60);
+	idInput(-30);
 
 	sendButton();
 	printConsole();
 	clearButton();
-	//deleteButton();
+	deleteButton();
 
 
   	setupSocket();
@@ -84,6 +88,23 @@ function noteInput(pos){
 
 
 
+/*
+----------------------
+for entering the id of a note
+----------------------
+*/
+function idInput(pos){
+
+	idText = createInput();
+	idText.position(width/2, height/2 + pos);
+
+}
+
+
+
+
+
+
 
 /*
 ----------------------
@@ -111,7 +132,7 @@ function  setupSocket(){
 	 
 
 		function(data) {
-			console.log("Note receive from server : " + data.title + ",    " + data.text);
+			console.log("Note receive from server :\n ID :" + data.title + ",    " + data.text);
 
 			
 			fill(50);
@@ -188,35 +209,58 @@ function clearButton(){
 
 
 
+
+
 /*
 
+----------------------
 
+----------------------
+*/
 function deleteButton(){
 
 	deleteBtn = createButton('delete');
 	deleteBtn.position(width/2-50, height/2+75);
-	deleteBtn.mousePressed( deleteDatabase);
+	deleteBtn.mousePressed(deleteNote);
 
 
 }
+
+
+
+
+
+
+
+/*
 
 ----------------------
 
 ----------------------
 */
 var  sendNoteToServer = function(){
+	try{
+
+		
+		var note = {
+			id: noteID,
+			title: title.value(),
+			text : noteText.value()
+		}
+		
+		noteID += 1;
+
+		console.log("Sent note to server : ");// + title.value());
+
+		print(note);
+		//print(parseInt(idText.value()));
+		socket.emit('text',note);
 
 
-	console.log("Sent note to server : " + title.value());
 
-	var note = {
-		title: title.value(),
-		text : noteText.value()
+	}catch(err){
+		print("ERROR : " + err);
 	}
-
-
-	socket.emit('text',note);
-
 }
 
 
@@ -246,13 +290,30 @@ var  printDatabase = function(){
 ----------------------
 
 ----------------------
+*/
+var  deleteNote = function(){
+	try{
+		print(!isNumeric(idText.value()));
+		if(  !isNumeric(idText.value()) ) throw "That is not at number";
 
-var  deleteDatabase = function(){
-	socket.emit('delete',{});
+		console.log({"id": idText.value() });
+
+		socket.emit('delete',{"id": idText.value() });
+
+	}catch(err){
+
+    	print("ERROR : " + err);
+
+    	if(err === "That is not at number"){
+    		alert("ERROR : " + err);
+    	}
+
+	}	
+		
 
 }
 
-*/
+
 
 
 
@@ -268,3 +329,25 @@ var  clearDatabase = function(){
 	socket.emit('clear',{});
 
 }
+
+
+
+
+
+
+
+
+/*
+----------------------
+https://stackoverflow.com/questions/18082/validate-decimal-numbers-in-javascript-isnumeric
+----------------------
+*/
+function isNumeric(n) {
+  return !isNaN(parseFloat(n)) && isFinite(n);
+}
+
+
+
+
+
+
