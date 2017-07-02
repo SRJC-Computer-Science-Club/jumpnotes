@@ -210,37 +210,33 @@ https://stackoverflow.com/questions/16743729/mongodb-find-if-a-collection-is-emp
 ----------------------
 */
 function clearDatabase(){
-var numOfnotes = 0;
-   mongoClient.connect(url, function (err, db) {
-        
-        db.collection(databaseName, function (err, collection) {
+	try{
+		var numOfnotes = 0;
 
-         /* try{
+		mongoClient.connect(url, function (err, db) {
+		    
+		    if(err) throw err;//" Problem with mongoClient.connect()";
+
+		    db.collection(databaseName, function (err, collection) {
+
+		    	if(err) throw err;//" Problem  db.collection()";
 
 
-            db.collection(databaseName).count(function (err, count) {
-                numOfnotes = count;
-              });
+		        db.collection(databaseName).remove({});
+
+				print("Cleared database!");
+
+			});
+		                
+		});
 
 
-            if(numOfnotes === 0)
-             throw "Database us empty, nothing to clear";
-*/
-            print("Cleared database!");
-            db.collection(databaseName).remove({});
+	}catch(err){
 
-/*
-           
-              
-          }catch(err){
+		print("ERROR : " + err);
 
-            print("ERROR : " + err);
-          }
-      
-*/
-        });
-                    
-    });
+	}
+
 }
 
 
@@ -273,7 +269,7 @@ function deleteNote(data){
    mongoClient.connect(url, function(err,db){
 
       db.collection(databaseName, function(err, collection){
-      	
+
       	if(err){ print(err); }
 
           db.collection(databaseName).remove(data);
