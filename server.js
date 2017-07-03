@@ -1,136 +1,220 @@
-// port of client web addres for testing 
-var PORT = 3000;
-var databaseName = 'database';
-
-var url = "mongodb://localhost:27017/" + databaseName;
-
-var cmd = 'start cmd /k mongod --dbpath data';
-
-
-
-
 /*
-----------------------
+JumpNotes server 
+by Oran Collins
+Date 07/2/2017
 
-----------------------
-*/
-/*
-
-import all the nessisary packages and 
-create objects that will be refrenced*/
-
-/* 
-
-MongoClient - the reason it is importing the client
-is because the server is a client of the
-mongodb server running on localhost:27017
-
+this handls the saving/deletion/update of 
+notes stored on the jumpnote app into a mongodb
+database
+for more info checkout the github 
+https://github.com/SRJC-Computer-Science-Club/jumpnotes/
 */
 
-var http = require('https');
-var express = require('express');
 var mongoClient = require('mongodb').MongoClient;
+var express = require('express');
+var https = require('https');
+var http = require('http');
 var opn = require('opn');
+var fs = require('fs');
 
-opn('https://localhost:'+PORT);
+
+
+
+
+
+
+
 /*
-
-
-add - creates a express server object
-app.use(express.static()) - tells express to use the 
-html file stored in the directory /public ie public/html
-socket - creates a socket.io socket for handing connections
-var io = socket(server);  - attaches a socket to the webserver
-
-d - is a domain that handls errors and makes sure they dont crash the server
-domain how to https://engineering.gosquared.com/error-handling-using-domains-node-js
-			  https://stackoverflow.com/questions/20689768/how-to-ensure-node-js-keeps-running-after-monogdb-connection-drops
-exec - executes a command ie restarting the mongodb server
-exec how to https://stackoverflow.com/questions/20643470/execute-a-command-line-binary-with-node-js#20643568
+Global settings
 */
-var app  = express();
-
-var server = app.listen(PORT);
-
-app.use(express.static('public'));
-
-var socket = require('socket.io');
-
-var io = socket(server);
-
-var d = require('domain').create();
-
-var exec = require('child_process').exec;
+var serverPort = 443;
+var databaseName = 'database'
+var url = "mongodb://localhost:27017/" + databaseName;
+var doesItExist = 0;
+//https://docs.nodejitsu.com/articles/HTTP/servers/how-to-create-a-HTTPS-server/
+//https://stackoverflow.com/questions/31156884/how-to-use-https-on-node-js-using-express-socket-io#31165649
+var options = {
+  key: fs.readFileSync('ssl_certificates/key.pem'),
+  cert: fs.readFileSync('ssl_certificates/cert.pem')
+};
 
 
 
-console.log("JumpNotes is Running....");
-console.log("Address : https://localhost:" + PORT);
 
 
 
 
 /*
+----------------------
+server setup
+----------------------
+*/
+var app = express();
+var server = https.createServer(options, app);
+var io = require('socket.io')(server);
 
-Create a socket that the client app connects to 
-and every other client can acess
+opn('https://localhost:'+serverPort);
 
+/*
+desplying index.html on client 
+by sending the file statically
+*/
+app.use(express.static(__dirname + '/public'));
+
+
+
+
+
+
+
+
+/*
+----------------------
+for people who try to go to non https
+version of the client
+----------------------
+*/
+var redirect = express();
+redirect.use(express.static(__dirname + "/404/")); //use static files in ROOT/public folder
+
+redirect.get("/", function(request, response){ //root dir
+    response.send("You visited the wrong url please click here https://localhost:443");
+});
+
+redirect.listen(80, "127.0.0.1");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+----------------------
+setup sockets and events that
+are triggerd on socket connection
+----------------------
 */
 var clientConnection =  new Sockets();
-
 
 io.on('connection', newConnection);
 
 
+
+server.listen(serverPort, function() {
+	console.log("JumpNotes Server is Running....");
+	console.log('Address : https://localhost:%s',serverPort);
+});
+
+
+
+
+
+
+
+
+
+
+/*
+----------------------
+Client connecting to server
+----------------------
+*/
 function newConnection(socket){
-    
-      clientConnection.add(socket);
 
-
-      socket.on("text", function(data){
-
-      	print(" Data Resived : " );
-
-      	print(data);
-
-
- 		socket.emit('text',data);
-
-
- 		saveNotetoDatabase(data);   
-
-      });
-
-
-
-      //print to console if socket has tag print
-      socket.on("print", function(data){
-
-        socket.emit('print',data);
-
-        printDatabase();
-      });
+	clientConnection.add(socket);
 
 
 
 
-      socket.on("clear", function(data){
-
-        socket.emit('clear',data);
-          clearDatabase();
-      });
 
 
 
 
-      socket.on("delete", function(data){
+	/*
+	----------------------
+	save note to database when s
+	client calls emit("text", JSON objec with note data inside)
+	----------------------
+	*/
+	socket.on("save", function(data){
+		socket.emit('save', data);
+		saveNote(data);
+	});
 
-        socket.emit('delete',data);
 
-        deleteNote(data);
-      });
 
-      
+
+
+
+
+	/*
+	----------------------
+	prints all of database to console
+	when client calls emit("print", {id:0, title:" ", text" ""}) 
+	----------------------
+	*/
+	socket.on("print", function(data){
+		socket.emit('print', data);
+		printNotes();
+	});
+
+
+
+
+
+
+
+
+
+	/*
+	----------------------
+	 clears all notes on database server
+	----------------------
+	*/
+	socket.on("clear", function(data){
+		socket.emit('clear', data);
+		wipeDatabase();
+	});
+
+
+
+
+
+
+
+
+	/*
+	----------------------
+	removes one note with the id of {id: X}
+	example client code
+	socket.emit("removes", {id:8});
+	----------------------
+	*/
+	socket.on("remove", function(data){
+		socket.emit('remove',data);
+		removeNote(data);
+	});
+
+
 }
 
 
@@ -139,149 +223,144 @@ function newConnection(socket){
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /*
 ----------------------
-takes json object and saves it to the
-mongodb database
+ saves notes to mongo database
+ notes come in the form of json objects
+ EI
+ data = {
+		    "id": 5,
+		    "title": "My first Awesome Note!",
+		    "noteText": "Idea for greate new book title Brave New World"
+		}
+
+and are saved by issueing the command
+db.< name of database >.insert(data)
+
+then it closes that connction
 ----------------------
 */
-function saveNotetoDatabase(data){
-   
+function saveNote(clientNote){
 
-/*
-//TODO error domains
+	print("Note Saved : " );
 
+	print(clientNote);
 
-    d.run(function() {
+	//check if all the fields are correct
+	validateJson(clientNote);
 
-			
+	mongoClient.connect(url, function(err,db){
+		//TODO DOMAIN HERE
+		if (err) throw err;
 
-			exec(cmd, function(error, stdout, stderr) {
-			  // command output is in stdout
-			});
+		db.collection(databaseName, function(err, collection){
+			//TODO DOMAIN HERE
+			if (err) throw err;
+
+			db.collection(databaseName).insert(clientNote);
+
+			db.close();
+
+		});
 
 	});
-*/	
 
-	    try{
+}
 
-	        validateText(data);
 
-	        //printNote(data);
 
-	        mongoClient.connect(url, function(err,db){
 
+
+
+
+
+/*
+----------------------
+ prints all notes stored in the mongo database
+ uses .find().toArray() to output
+ all the notes as a string
+
+ and .count() to find total number of
+ notes
+----------------------
+*/
+function printNotes(){
+	mongoClient.connect(url, function(err,db){
+
+		db.collection(databaseName, function(err, collection){
+			//TODO DOMAIN HERE
+			if (err) throw err;
+
+			db.collection(databaseName).find().toArray(function (err, result) {
+				//TODO DOMAIN HERE
 				if (err) throw err;
 
-	            db.collection(databaseName, function(err, collection){
+				db.collection(databaseName).count(function (err, totalNotes) {
+					//TODO DOMAIN HERE
+					fancyPrint(result, totalNotes);
 
-	               if (err) throw err;
-
-	                db.collection(databaseName).insert(data);
-	                db.close();
-	              }
-	            );
-	          }
-	        );
-
-	    }catch(err){
-
-	      console.log("ERROR : " + err);
-
-	    }
-
-
-
-
-
-
-
-
-/*
-//TODO error domains
-
-
-       d.on('error', function(er) {
-
-
-		print("ERROR : Can't connect to Database Server!");
-
-        //exec(cmd, function(error, stdout, stderr) {	});
-
-   		 });
-  */
-}
-
-
-
-
-
-
-
-
-/*
-----------------------
-Prints all items in database
-----------------------
-*/
-function printDatabase(data){
-
- 
-   mongoClient.connect(url, function(err,db){
-
-      db.collection(databaseName, function(err, collection){
-
-          db.collection(databaseName).find().toArray(function (err, result) {
-
-           
-
-            db.collection(databaseName).count(function (err, count) {
-                  console.log(count);
-            });
-
-            printFormated(result)
-          });
-        });
-    });
-
-}
-
-
-
-
-
-
-
-
-
-
-
-/*
-----------------------
-clears everything in the database
-https://stackoverflow.com/questions/28454380/efficient-way-to-remove-all-entries-from-mongodb#28454476
-https://stackoverflow.com/questions/16743729/mongodb-find-if-a-collection-is-empty-node-js#16743950
-----------------------
-*/
-function clearDatabase(){
-	try{
-		var numOfnotes = 0;
-
-		mongoClient.connect(url, function (err, db) {
-		    
-		    if(err) throw err;//" Problem with mongoClient.connect()";
-
-		    db.collection(databaseName, function (err, collection) {
-
-		    	if(err) throw err;//" Problem  db.collection()";
-
-
-		        db.collection(databaseName).remove({});
-
-				print("Cleared database!");
+				});
 
 			});
-		                
+
+		});
+
+	});
+
+}
+
+
+
+
+
+
+
+
+/*
+----------------------
+ deletes all notes from database
+ by calling the mongodb function
+ db.<database name here>.remove({})
+ which removes all notes
+----------------------
+*/
+function wipeDatabase(){
+
+	try{
+
+
+		mongoClient.connect(url, function (err, db) {
+			//TODO DOMAIN HERE
+			if (err) throw err;
+
+			db.collection(databaseName, function (err, collection) {
+				//TODO DOMAIN HERE
+				if (err) throw err;
+
+				db.collection(databaseName).remove({});
+
+				print("\nAll Notes Deleted!\n");
+
+			});
+
 		});
 
 
@@ -300,40 +379,86 @@ function clearDatabase(){
 
 
 
+
 /*
 ----------------------
-Deletes a note in the database by 
-selecting the notes "id"
-example note to be deleted
+Delete a specific note in database
+this is done by selecting an "ID"
+of the note and passing that in a
+JSON object like this
 
-{
+data = { id: X }
+x being the notes id
+
+
+to select the note with id = 5
+
+ {
     "id": 5,
     "title": "My first Awesome Note!",
     "noteText": "Idea for greate new book title Brave New World"
 }
 
-to delete this note we send
+you need to send call
 
-deleteNote({"id":5});
+> removeNote({id:5})
+
 ----------------------
 */
-function deleteNote(data){
+function removeNote(clientsNote){
+	mongoClient.connect(url, function(err,db){
+		//TODO DOMAIN HERE
+		if (err) throw err;
 
+		db.collection(databaseName, function(err, collection){
+			//TODO DOMAIN HERE
+			if (err) throw err;
 
-   mongoClient.connect(url, function(err,db){
+			db.collection(databaseName).find(clientsNote).count(function (err, totalNotes) {
 
-      db.collection(databaseName, function(err, collection){
+				doesItExist = totalNotes;
 
-      	if(err){ print(err); }
+			});
 
-          db.collection(databaseName).remove(data);
-        
-        });
-    });
+			db.collection(databaseName).count(function (err, totalNotes) {
+				//TODO DOMAIN HERE
+				try{
 
+					if(totalNotes === 0) throw "Empty Database, None to remove";
+					if(doesItExist === 0) throw "No node with that ID";
 
-  print("Deleted Note : " + data.id );
+					doesItExist = 0;
+
+					db.collection(databaseName).remove(clientsNote);
+
+					print("\nDeleted Note With ID : " + clientsNote.id + "\n");
+
+				}catch(err){
+
+					print("ERROR : " + err);
+
+				}
+
+			});
+
+		});
+
+	});
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -345,40 +470,44 @@ function deleteNote(data){
 
 /*
 ----------------------
-
+ prints the contents of notes
+ in a cleaner way
 ----------------------
 */
-function printFormated(result){
+function fancyPrint(result,totalNotes){
 
-  var output = 'Note : ';
+var output = '\n\n\n\n\n';
 
-  try{
-
-
-      if(result.length === 0){ 
-
-        throw "Database is empty, nothing to print";
-
-      }else{
-        
-        for( var i = 0; i < result.length; i++){
-
-          output +=  "\n id: " + result[i].id + "\n" +result[i].title + "\n" + result[i].text + "\n " + "-----------" + "\n";
-
-        }
-
-        console.log( output );
-      }
+	try{
 
 
 
-  }catch(err){
+		if(result.length === 0){ 
 
-    print("ERROR : " + err);
+			throw "Empty Database; nothing to print";
 
-  }
+		}else{
+
+			for( var i = 0; i < result.length; i++){
+
+				output +=  "id: "+ result[i].id    + "\n" 
+								 + result[i].title + "\n" 
+								 + result[i].text  + "\n" 
+								 + "-----------"   + "\n";
+
+			}
+			print(output + "\nTotal : " + totalNotes);
+		}
+
+
+
+	}catch(err){
+
+		print("ERROR : " + err);
+
+	}
+
 }
-
 
 
 
@@ -387,62 +516,12 @@ function printFormated(result){
 
 
 /*
-----------------------
-data validation
-----------------------
-*/
-function validateText(data){
-	if(data.id === null) throw "id is null";
-	if(!isNumeric(data.id)) throw "id is not a number";
-	if(data.title === null) throw "title is NULL!";
-	if(data.text === null) throw "text is NULL!";
-	if(typeof data.title !== 'string') throw "title is not a string";
-	if(typeof data.text !== 'string') throw "text is not a string";
-	if(data.title === '' && data.text === '') throw "Json object is empty!";
-}
-/*
-----------------------
-takes in the json object 
-like this one
-{
-    "id": 1,
-    "title": "My first Awesome Note!",
-    "noteText": "Idea for greate new book title Brave New World"
-}
-
-output
-
-Note :
-My first Awesome Note!
-Idea for greate new book title Brave New World
-____________________________________
-----------------------
-*/
-function printNote(Note){
-  if(Note.title !== '' || Note.text !== ''){
-    console.log("");
-    console.log("Note : ");
-    console.log(Note.title);
-    console.log(Note.text);
-    console.log("____________________________________");
-  }
-}
-
-
-
-
-
-
-
-
-
-/*
-
-Small Sockets class the handless socket tags better
-for documenation
+-----------------------------
+Small Sockets class that handls 
+socket tags better
+more info/documenation
 //https://stackoverflow.com/questions/18654173/emiting-with-exclusion-in-socket-io
-
-
+----------------------------
 */
 function Sockets() {
   this.list = [ ];
@@ -479,10 +558,38 @@ Sockets.prototype.emit = function(name, data, except) {
 
 /*
 ----------------------
+ verify that all the data in the
+ note
+----------------------
+*/
+function validateJson(note){
+	if(typeof note.id === "undefined") throw "ID is undefined!";
+	if(typeof note.title === "undefined") throw "Title is undefined!";
+	if(typeof note.text === "undefined") throw "Text is undefined!";
+	/*
+	if( note.id === null ) throw "id is null";
+	if( !isNumeric(note.id) ) throw "id is not a number";
+	if( note.title === null ) throw "title is NULL!";
+	if( note.text === null ) throw "text is NULL!";
+	if( typeof note.title !== 'string' ) throw "title is not a string";
+	if( typeof note.text !== 'string' ) throw "text is not a string";
+	if( note.title === '' && note.text === '' ) throw "Json object is empty!";
+*/
+}
+
+
+
+
+
+
+
+
+
+/*
+----------------------
 simple print function
 ----------------------
 */
-
 function print(text){
   return console.log(text);
 }
@@ -494,11 +601,15 @@ function print(text){
 
 
 
+
+
 /*
 ----------------------
+check if string is a number
 https://stackoverflow.com/questions/18082/validate-decimal-numbers-in-javascript-isnumeric
 ----------------------
 */
 function isNumeric(n) {
   return !isNaN(parseFloat(n)) && isFinite(n);
 }
+
