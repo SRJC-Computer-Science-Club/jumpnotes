@@ -27,12 +27,12 @@ mongodb server running on localhost:27017
 
 */
 
-var http = require('http');
+var http = require('https');
 var express = require('express');
 var mongoClient = require('mongodb').MongoClient;
 var opn = require('opn');
 
-opn('http://localhost:'+PORT);
+opn('https://localhost:'+PORT);
 /*
 
 
@@ -65,7 +65,7 @@ var exec = require('child_process').exec;
 
 
 console.log("JumpNotes is Running....");
-console.log("Address : http://localhost:" + PORT);
+console.log("Address : https://localhost:" + PORT);
 
 
 

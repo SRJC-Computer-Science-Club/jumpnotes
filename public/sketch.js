@@ -1,12 +1,12 @@
-var socket;
-
+var socket;    
+var URL_SERVER = 'https://localhost:443';
 
 var title, 
 	noteText,
 	saveButton, 
 	printButton,
 	clearBtn,
-	deleteBtn,
+	removeBtn,
 	idText;
 
 var noteID = 0;
@@ -38,7 +38,7 @@ function setup() {
 	sendButton();
 	printConsole();
 	clearButton();
-	deleteButton();
+	removeButton();
 
 
   	setupSocket();
@@ -125,9 +125,12 @@ how to create a action on socket tag incoming
 function  setupSocket(){
 
 	//inisiate the connection to server
-	socket = io.connect('http://localhost:3000');
+	socket = io.connect(URL_SERVER);
 
-
+	socket.on('message', function(data) {
+	alert(data);
+	});
+	
 
 
 	socket.on('text',
@@ -135,7 +138,7 @@ function  setupSocket(){
 
 		function(data) {
 
-			console.log("What was Saved To Server ID  \nID : " + data.id + ",\nTitle : " + data.title + ",\nText : " + data.text);
+			console.log("Receive from Server \nID : " + data.id + ",\nTitle : " + data.title + ",\nText : " + data.text);
 
 			
 			fill(50);
@@ -220,11 +223,11 @@ function clearButton(){
 
 ----------------------
 */
-function deleteButton(){
+function removeButton(){
 
-	deleteBtn = createButton('delete');
-	deleteBtn.position(width/2-50, height/2+75);
-	deleteBtn.mousePressed(deleteNote);
+	removeBtn = createButton('remove');
+	removeBtn.position(width/2-50, height/2+75);
+	removeBtn.mousePressed(removeNote);
 
 
 }
@@ -264,7 +267,7 @@ var  sendNoteToServer = function(){
 
 
 
-		socket.emit('text',note);
+		socket.emit('save',note);
 
 
 
@@ -307,7 +310,7 @@ var  printDatabase = function(){
 
 ----------------------
 */
-var  deleteNote = function(){
+var  removeNote = function(){
 	try{
 
 		if( idText.value() === "" ) throw "No index selected";
@@ -318,7 +321,7 @@ var  deleteNote = function(){
 			"id": parseInt(idText.value()) 
 		}
 
-		socket.emit('delete', noteIndex);
+		socket.emit('remove', noteIndex);
 
 		console.log(noteIndex);
 
