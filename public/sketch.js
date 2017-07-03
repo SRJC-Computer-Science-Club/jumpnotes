@@ -1,12 +1,15 @@
-var socket;
-
+var socket;    
+var URL_SERVER = 'https://localhost:443';
 
 var title, 
 	noteText,
 	saveButton, 
 	printButton,
 	clearBtn,
-	deleteBtn;
+	removeBtn,
+	idText;
+
+var noteID = 0;
 
 
 var defaultText = "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks";
@@ -30,11 +33,12 @@ function setup() {
 
 	titleInput(0);
 	noteInput(60);
+	idInput(-30);
 
 	sendButton();
 	printConsole();
 	clearButton();
-	//deleteButton();
+	removeButton();
 
 
   	setupSocket();
@@ -84,6 +88,23 @@ function noteInput(pos){
 
 
 
+/*
+----------------------
+for entering the id of a note
+----------------------
+*/
+function idInput(pos){
+
+	idText = createInput();
+	idText.position(width/2, height/2 + pos);
+
+}
+
+
+
+
+
+
 
 /*
 ----------------------
@@ -91,27 +112,33 @@ create sockets and initialize there
 socket tags, 
 tags filter the data beeing sent on the server side
 
-----------------------
-*/
-
-function  setupSocket(){
-
-	//inisiate the connection to server
-	socket = io.connect('http://localhost:3000');
+how to create a action on socket tag incoming
 
 	socket.on('text', function(data){
 			console.log("Text Works");
 		}
 	);
 
+----------------------
+*/
 
+function  setupSocket(){
+
+	//inisiate the connection to server
+	socket = io.connect(URL_SERVER);
+
+	socket.on('message', function(data) {
+	alert(data);
+	});
+	
 
 
 	socket.on('text',
 	 
 
 		function(data) {
-			console.log("Note receive from server : " + data.title + ",    " + data.text);
+
+			console.log("Receive from Server \nID : " + data.id + ",\nTitle : " + data.title + ",\nText : " + data.text);
 
 			
 			fill(50);
@@ -188,35 +215,71 @@ function clearButton(){
 
 
 
+
+
 /*
 
+----------------------
 
-function deleteButton(){
+----------------------
+*/
+function removeButton(){
 
-	deleteBtn = createButton('delete');
-	deleteBtn.position(width/2-50, height/2+75);
-	deleteBtn.mousePressed( deleteDatabase);
+	removeBtn = createButton('remove');
+	removeBtn.position(width/2-50, height/2+75);
+	removeBtn.mousePressed(removeNote);
 
 
 }
+
+
+
+
+
+
+
+/*
 
 ----------------------
 
 ----------------------
 */
 var  sendNoteToServer = function(){
+	try{
+
+		if(title.value() === "" && noteText.value() ==="") throw "Nothing to send, empty note";
+
+		var note = {
+			id: noteID,
+			title: title.value(),
+			text : noteText.value()
+		}
+		
+		noteID += 1;
+		
+		print("____________________________")
+
+		print("JSON Object sent to server : ");// + title.value());
+
+		print(note);
+
+		print("____________________________")
 
 
-	console.log("Sent note to server : " + title.value());
 
-	var note = {
-		title: title.value(),
-		text : noteText.value()
+		socket.emit('save',note);
+
+
+
+	}catch(err){
+
+		print("ERROR : " + err);
+
+
+    	if(err === "Nothing to send, empty note"){
+    		alert("ERROR : " + err);
+    	}
 	}
-
-
-	socket.emit('text',note);
-
 }
 
 
@@ -246,13 +309,39 @@ var  printDatabase = function(){
 ----------------------
 
 ----------------------
+*/
+var  removeNote = function(){
+	try{
 
-var  deleteDatabase = function(){
-	socket.emit('delete',{});
+		if( idText.value() === "" ) throw "No index selected";
+
+		if(  !isNumeric(idText.value()) ) throw "That is not at number";
+
+		var noteIndex = {
+			"id": parseInt(idText.value()) 
+		}
+
+		socket.emit('remove', noteIndex);
+
+		console.log(noteIndex);
+
+	}catch(err){
+
+    	print("ERROR : " + err);
+
+    	if(err === "That is not at number"){
+    		alert("ERROR : " + err);
+    	}
+
+    	if(err === "No index selected"){
+    		alert("ERROR : " + err);
+    	}
+	}	
+		
 
 }
 
-*/
+
 
 
 
@@ -268,3 +357,25 @@ var  clearDatabase = function(){
 	socket.emit('clear',{});
 
 }
+
+
+
+
+
+
+
+
+/*
+----------------------
+https://stackoverflow.com/questions/18082/validate-decimal-numbers-in-javascript-isnumeric
+----------------------
+*/
+function isNumeric(n) {
+  return !isNaN(parseFloat(n)) && isFinite(n);
+}
+
+
+
+
+
+
