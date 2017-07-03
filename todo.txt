@@ -1,6 +1,0 @@
-var cmd = 'start cmd /k mongod --dbpath data';
-exec - executes a command ie restarting the mongodb server
-exec how to https://stackoverflow.com/questions/20643470/execute-a-command-line-binary-with-node-js#20643568
-d - is a domain that handls errors and makes sure they dont crash the server
-domain how to https://engineering.gosquared.com/error-handling-using-domains-node-js
-			  https://stackoverflow.com/questions/20689768/how-to-ensure-node-js-keeps-running-after-monogdb-connection-drops
