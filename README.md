@@ -63,14 +63,14 @@ To get started:
 - Download [This file](https://github.com/SRJC-Computer-Science-Club/jumpnotes/archive/master.zip)
 -  Go to you Downloads folder
 -  Unzip  
-   >Note_Taking_App.zip
+   >jumpnotes-master.zip
       Clone this repository
     > git clone https://github.com/SRJC-Computer-Science-Club/jumpnotes.git
     
-  -  If `git` is not installed it can be download [here](https://git-scm.com/download/)
+  -  If `git` is not installed it can be download [here](https://desktop.github.com/)
   
  Go into the repository
-    > cd Note_Taking_App
+    > cd jumpnotes-master
     
      Install dependencies
     > npm install
