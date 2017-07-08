@@ -304,6 +304,21 @@ var  printDatabase = function(){
 
 
 
+/*
+----------------------
+
+----------------------
+*/
+function update(data){
+	socket.emit('update',data);
+
+}
+
+
+
+
+
+
 
 /*
 ----------------------

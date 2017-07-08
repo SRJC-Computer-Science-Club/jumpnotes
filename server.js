@@ -214,6 +214,35 @@ function newConnection(socket){
 	});
 
 
+
+
+
+
+
+
+
+
+	/*
+	----------------------
+	updaates one note with the id of {id: X} or
+	text of {text: Y} or 
+	example client code
+	 data = {
+		    "id": 5,
+		    "title": "note to be updated",
+		    "noteText": "text of updated note goes here"
+		}
+
+	socket.emit("update", data);
+	----------------------
+	*/
+	socket.on("update", function(data){
+		socket.emit('update',data);
+		console.log("UPDATE WORKS", data );
+		updateNote(data);
+	});
+
+
 }
 
 
@@ -446,6 +475,56 @@ function removeNote(clientsNote){
 
 }
 
+
+
+
+
+
+
+
+/*
+----------------------
+ updates a now with new data from a 
+ json object
+db.database.update(
+	{ id: 5 },
+	{ 
+		id:5,
+		title:"TITLE",
+		text:"111111111111" 
+	},
+	{ upsert: false } 
+)
+//https://docs.mongodb.com/manual/reference/method/db.collection.update/
+----------------------
+*/
+function updateNote(data){
+
+	try{
+
+		mongoClient.connect(url, function (err, db) {
+			//TODO DOMAIN HERE
+			if (err) throw err;
+
+			db.collection(databaseName, function (err, collection) {
+				//TODO DOMAIN HERE
+				if (err) throw err;
+
+				db.collection(databaseName).update({id:data.id},data,{ upsert: true });
+				print("works");
+
+			});
+
+		});
+
+
+	}catch(err){
+
+		print("ERROR : " + err);
+
+	}
+
+}
 
 
 
