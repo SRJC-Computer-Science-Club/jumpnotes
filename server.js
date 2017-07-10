@@ -288,29 +288,34 @@ then it closes that connction
 */
 function saveNote(clientNote){
 
-	print("Note Saved : " );
+	print("Note Saved : ");
 
 	print(clientNote);
 
 	//check if all the fields are correct
 	validateJson(clientNote);
 
-	mongoClient.connect(url, function(err,db){
+	mongoClient.connect(url, function (err, db) {
 		//TODO DOMAIN HERE
-		if (err) throw err;
+		if (err) {
+			console.log("ERROR : Mongodb connection issues");
+		} else {
 
-		db.collection(databaseName, function(err, collection){
-			//TODO DOMAIN HERE
-			if (err) throw err;
+			db.collection(databaseName, function (err, collection) {
+				if (err){
+					console.log("ERROR : With Mongodb insert!")
+				}else{
 
-			db.collection(databaseName).insert(clientNote);
+					db.collection(databaseName).insert(clientNote);
 
-			db.close();
+					db.close();
 
-		});
+                }
+
+			});
+		}
 
 	});
-
 }
 
 
@@ -644,7 +649,7 @@ function validateJson(note){
 	if(typeof note.id === "undefined") throw "ID is undefined!";
 	if(typeof note.title === "undefined") throw "Title is undefined!";
 	if(typeof note.text === "undefined") throw "Text is undefined!";
-	/*
+
 	if( note.id === null ) throw "id is null";
 	if( !isNumeric(note.id) ) throw "id is not a number";
 	if( note.title === null ) throw "title is NULL!";
@@ -652,7 +657,7 @@ function validateJson(note){
 	if( typeof note.title !== 'string' ) throw "title is not a string";
 	if( typeof note.text !== 'string' ) throw "text is not a string";
 	if( note.title === '' && note.text === '' ) throw "Json object is empty!";
-*/
+
 }
 
 
