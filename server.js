@@ -238,7 +238,6 @@ function newConnection(socket){
 	*/
 	socket.on("update", function(data){
 		socket.emit('update',data);
-		console.log("UPDATE WORKS", data );
 		updateNote(data);
 	});
 
@@ -516,6 +515,8 @@ function updateNote(data){
 
 	try{
 
+	    validateID(data);
+
 		mongoClient.connect(url, function (err, db) {
             if (err){
                 console.log("updateNote : Error connecting to mongodb server!");
@@ -527,7 +528,7 @@ function updateNote(data){
                     }else {
 
                         db.collection(databaseName).update({id: data.id}, data, {upsert: true});
-                        print("works");
+
                     }
                 });
             }
@@ -536,7 +537,7 @@ function updateNote(data){
 
 	}catch(err){
 
-		print("ERROR : " + err);
+		print("ERREOR : " + err);
 
 	}
 
@@ -680,10 +681,33 @@ function validateJson(note){
 
 
 /*
-----------------------
-simple print function
-----------------------
-*/
+ ----------------------
+   check if {id: X} is valid
+   and a number only
+ ----------------------
+ */
+function validateID(data) {
+    if(!(data instanceof Object))       throw "Note is note an object or Json!";
+    if(typeof data === "undefined")     throw "ID is undefined!";
+    if( data.id === null )              throw "ID is null";
+    if( data.id === "")                 throw "ID a string!";
+    if( !isNumeric(data.id) )           throw "ID is not a number";
+    if(data.id < 0)                     throw "ID is Negative!";
+}
+
+
+
+
+
+
+
+
+
+/*
+ ----------------------
+ simple print function
+ ----------------------
+ */
 function print(text){
   return console.log(text);
 }

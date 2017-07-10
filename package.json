@@ -10,7 +10,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
     "windows": "start cmd /k mongod --dbpath data/db & node server.js",
-    "clear":"sudo rm -r node_modules & sudo rm -r data/db/*"
+    "clear": "sudo rm -r node_modules & sudo rm -r data/db/*",
+    "mongo_windows": "mongod --dbpath data/db",
+    "mongo_ubuntu": "sudo mongod --dbpath data/db"
   },
   "repository": {
     "type": "git",
