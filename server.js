@@ -288,34 +288,38 @@ then it closes that connction
 */
 function saveNote(clientNote){
 
-	print("Note Saved : ");
+    try {
+        print("Note Saved : ");
 
-	print(clientNote);
+        print(clientNote);
 
-	//check if all the fields are correct
-	validateJson(clientNote);
+        //check if all the fields are correct
+        validateJson(clientNote);
 
-	mongoClient.connect(url, function (err, db) {
-		//TODO DOMAIN HERE
-		if (err) {
-			console.log("ERROR : Mongodb connection issues");
-		} else {
+        mongoClient.connect(url, function (err, db) {
+            //TODO DOMAIN HERE
+            if (err) {
+                console.log("saveNote : Error connecting to mongodb server!");
+            } else {
 
-			db.collection(databaseName, function (err, collection) {
-				if (err){
-					console.log("ERROR : With Mongodb insert!")
-				}else{
+                db.collection(databaseName, function (err, collection) {
+                    if (err) {
+                        console.log("ERROR : With Mongodb insert!")
+                    } else {
 
-					db.collection(databaseName).insert(clientNote);
+                        db.collection(databaseName).insert(clientNote);
 
-					db.close();
+                        db.close();
 
-                }
+                    }
 
-			});
-		}
+                });
+            }
 
-	});
+        });
+    }catch(err){
+        print("ERROR: " + err);
+    }
 }
 
 
@@ -336,26 +340,35 @@ function saveNote(clientNote){
 ----------------------
 */
 function printNotes(){
+
+
 	mongoClient.connect(url, function(err,db){
+        if (err){
+            console.log("printNotes : Error connecting to mongodb server!");
+        }else {
 
-		db.collection(databaseName, function(err, collection){
-			//TODO DOMAIN HERE
-			if (err) throw err;
+            db.collection(databaseName, function (err, collection) {
+                if (err){
+                	console.log("printNotes : Error accessing collection!");
+				}else{
 
-			db.collection(databaseName).find().toArray(function (err, result) {
-				//TODO DOMAIN HERE
-				if (err) throw err;
+                    db.collection(databaseName).find().toArray(function (err, result) {
+                        if (err){
+                            console.log("printNotes : Error Find() ing an note!");
+                        }else {
 
-				db.collection(databaseName).count(function (err, totalNotes) {
-					//TODO DOMAIN HERE
-					fancyPrint(result, totalNotes);
-
-				});
-
-			});
-
-		});
-
+                            db.collection(databaseName).count(function (err, totalNotes) {
+                                if (err){
+                                    console.log("printNotes : Error counting() notes!");
+                                }else {
+                                    fancyPrint(result, totalNotes);
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+		}
 	});
 
 }
@@ -377,31 +390,25 @@ function printNotes(){
 */
 function wipeDatabase(){
 
-	try{
+	mongoClient.connect(url, function (err, db) {
 
-
-		mongoClient.connect(url, function (err, db) {
-			//TODO DOMAIN HERE
-			if (err) throw err;
+		if (err){
+			console.log("wipeDatabase : Error connecting to mongodb server!");
+		}else {
 
 			db.collection(databaseName, function (err, collection) {
-				//TODO DOMAIN HERE
-				if (err) throw err;
 
-				db.collection(databaseName).remove({});
+				if (err){
+					console.log("wipeDatabase : Error accessing collection!");
+				}else {
 
-				print("\nAll Notes Deleted!\n");
+					db.collection(databaseName).remove({});
 
+					print("\nAll Notes Deleted!\n");
+				}
 			});
-
-		});
-
-
-	}catch(err){
-
-		print("ERROR : " + err);
-
-	}
+		}
+	});
 
 }
 
@@ -440,42 +447,44 @@ you need to send call
 */
 function removeNote(clientsNote){
 	mongoClient.connect(url, function(err,db){
-		//TODO DOMAIN HERE
-		if (err) throw err;
+        if (err){
+            console.log("removeNote : Error connecting to mongodb server!");
+        }else {
 
-		db.collection(databaseName, function(err, collection){
-			//TODO DOMAIN HERE
-			if (err) throw err;
+            db.collection(databaseName, function (err, collection) {
+                if (err){
+                    console.log("removeNote : Error accessing collection!");
+                }else {
 
-			db.collection(databaseName).find(clientsNote).count(function (err, totalNotes) {
+                    db.collection(databaseName).find(clientsNote).count(function (err, totalNotes) {
 
-				doesItExist = totalNotes;
+                        doesItExist = totalNotes;
 
-			});
+                    });
 
-			db.collection(databaseName).count(function (err, totalNotes) {
-				//TODO DOMAIN HERE
-				try{
+                    db.collection(databaseName).count(function (err, totalNotes) {
 
-					if(totalNotes === 0) throw "Empty Database, None to remove";
-					if(doesItExist === 0) throw "No node with that ID";
+                        try {
 
-					doesItExist = 0;
+                            if (totalNotes === 0) throw "Empty Database, None to remove";
+                            if (doesItExist === 0) throw "No node with that ID";
 
-					db.collection(databaseName).remove(clientsNote);
+                            doesItExist = 0;
 
-					print("\nDeleted Note With ID : " + clientsNote.id + "\n");
+                            db.collection(databaseName).remove(clientsNote);
 
-				}catch(err){
+                            print("\nDeleted Note With ID : " + clientsNote.id + "\n");
 
-					print("ERROR : " + err);
+                        } catch (err) {
 
-				}
+                            print("ERROR : " + err);
 
-			});
+                        }
 
-		});
-
+                    });
+                }
+            });
+        }
 	});
 
 }
@@ -508,18 +517,20 @@ function updateNote(data){
 	try{
 
 		mongoClient.connect(url, function (err, db) {
-			//TODO DOMAIN HERE
-			if (err) throw err;
+            if (err){
+                console.log("updateNote : Error connecting to mongodb server!");
+            }else {
 
-			db.collection(databaseName, function (err, collection) {
-				//TODO DOMAIN HERE
-				if (err) throw err;
+                db.collection(databaseName, function (err, collection) {
+                    if (err){
+                        console.log("updateNote : Error accessing collection!");
+                    }else {
 
-				db.collection(databaseName).update({id:data.id},data,{ upsert: true });
-				print("works");
-
-			});
-
+                        db.collection(databaseName).update({id: data.id}, data, {upsert: true});
+                        print("works");
+                    }
+                });
+            }
 		});
 
 
