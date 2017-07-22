@@ -28,7 +28,7 @@ Global settings
 */
 var serverPort = 443;
 var databaseName = 'database'
-var url = "mongodb://localhost:27017/" + databaseName;
+var url = "mongodb://mongo:27017/" + databaseName;
 var doesItExist = 0;
 //https://docs.nodejitsu.com/articles/HTTP/servers/how-to-create-a-HTTPS-server/
 //https://stackoverflow.com/questions/31156884/how-to-use-https-on-node-js-using-express-socket-io#31165649
