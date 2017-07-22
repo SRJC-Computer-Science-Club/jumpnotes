@@ -1,0 +1,10 @@
+server:
+  build: .
+  ports:
+    - "443:443"
+  links:
+    - "db:mongo"
+db:
+  image: mongo
+  ports:
+    - "27017:27017"

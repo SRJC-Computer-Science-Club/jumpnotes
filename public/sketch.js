@@ -1,5 +1,6 @@
 var socket;    
 var URL_SERVER = 'https://localhost:443';
+//var URL_SERVER = 'https://192.168.1.12:443';
 
 var title, 
 	noteText,

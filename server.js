@@ -28,7 +28,6 @@ Global settings
 */
 var serverPort = 443;
 var databaseName = 'database'
-//var url = "mongodb://localhost:27017/" + databaseName;
 var url = "mongodb://mongo:27017/" + databaseName;
 var doesItExist = 0;
 //https://docs.nodejitsu.com/articles/HTTP/servers/how-to-create-a-HTTPS-server/
