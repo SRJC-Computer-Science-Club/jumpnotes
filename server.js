@@ -28,7 +28,7 @@ Global settings
 */
 var serverPort = 443;
 var databaseName = 'database'
-var url = "mongodb://localhost:27017/" + databaseName;
+var url = "mongodb://mongo:27017/" + databaseName;
 var doesItExist = 0;
 //https://docs.nodejitsu.com/articles/HTTP/servers/how-to-create-a-HTTPS-server/
 //https://stackoverflow.com/questions/31156884/how-to-use-https-on-node-js-using-express-socket-io#31165649
@@ -238,7 +238,6 @@ function newConnection(socket){
 	*/
 	socket.on("update", function(data){
 		socket.emit('update',data);
-		console.log("UPDATE WORKS", data );
 		updateNote(data);
 	});
 
@@ -288,29 +287,38 @@ then it closes that connction
 */
 function saveNote(clientNote){
 
-	print("Note Saved : " );
+    try {
+        print("Note Saved : ");
 
-	print(clientNote);
+        print(clientNote);
 
-	//check if all the fields are correct
-	validateJson(clientNote);
+        //check if all the fields are correct
+        validateJson(clientNote);
 
-	mongoClient.connect(url, function(err,db){
-		//TODO DOMAIN HERE
-		if (err) throw err;
+        mongoClient.connect(url, function (err, db) {
+            //TODO DOMAIN HERE
+            if (err) {
+                console.log("saveNote : Error connecting to mongodb server!");
+            } else {
 
-		db.collection(databaseName, function(err, collection){
-			//TODO DOMAIN HERE
-			if (err) throw err;
+                db.collection(databaseName, function (err, collection) {
+                    if (err) {
+                        console.log("ERROR : With Mongodb insert!")
+                    } else {
 
-			db.collection(databaseName).insert(clientNote);
+                        db.collection(databaseName).insert(clientNote);
 
-			db.close();
+                        db.close();
 
-		});
+                    }
 
-	});
+                });
+            }
 
+        });
+    }catch(err){
+        print("ERROR: " + err);
+    }
 }
 
 
@@ -331,26 +339,35 @@ function saveNote(clientNote){
 ----------------------
 */
 function printNotes(){
+
+
 	mongoClient.connect(url, function(err,db){
+        if (err){
+            console.log("printNotes : Error connecting to mongodb server!");
+        }else {
 
-		db.collection(databaseName, function(err, collection){
-			//TODO DOMAIN HERE
-			if (err) throw err;
+            db.collection(databaseName, function (err, collection) {
+                if (err){
+                	console.log("printNotes : Error accessing collection!");
+				}else{
 
-			db.collection(databaseName).find().toArray(function (err, result) {
-				//TODO DOMAIN HERE
-				if (err) throw err;
+                    db.collection(databaseName).find().toArray(function (err, result) {
+                        if (err){
+                            console.log("printNotes : Error Find() ing an note!");
+                        }else {
 
-				db.collection(databaseName).count(function (err, totalNotes) {
-					//TODO DOMAIN HERE
-					fancyPrint(result, totalNotes);
-
-				});
-
-			});
-
-		});
-
+                            db.collection(databaseName).count(function (err, totalNotes) {
+                                if (err){
+                                    console.log("printNotes : Error counting() notes!");
+                                }else {
+                                    fancyPrint(result, totalNotes);
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+		}
 	});
 
 }
@@ -372,31 +389,25 @@ function printNotes(){
 */
 function wipeDatabase(){
 
-	try{
+	mongoClient.connect(url, function (err, db) {
 
-
-		mongoClient.connect(url, function (err, db) {
-			//TODO DOMAIN HERE
-			if (err) throw err;
+		if (err){
+			console.log("wipeDatabase : Error connecting to mongodb server!");
+		}else {
 
 			db.collection(databaseName, function (err, collection) {
-				//TODO DOMAIN HERE
-				if (err) throw err;
 
-				db.collection(databaseName).remove({});
+				if (err){
+					console.log("wipeDatabase : Error accessing collection!");
+				}else {
 
-				print("\nAll Notes Deleted!\n");
+					db.collection(databaseName).remove({});
 
+					print("\nAll Notes Deleted!\n");
+				}
 			});
-
-		});
-
-
-	}catch(err){
-
-		print("ERROR : " + err);
-
-	}
+		}
+	});
 
 }
 
@@ -435,42 +446,44 @@ you need to send call
 */
 function removeNote(clientsNote){
 	mongoClient.connect(url, function(err,db){
-		//TODO DOMAIN HERE
-		if (err) throw err;
+        if (err){
+            console.log("removeNote : Error connecting to mongodb server!");
+        }else {
 
-		db.collection(databaseName, function(err, collection){
-			//TODO DOMAIN HERE
-			if (err) throw err;
+            db.collection(databaseName, function (err, collection) {
+                if (err){
+                    console.log("removeNote : Error accessing collection!");
+                }else {
 
-			db.collection(databaseName).find(clientsNote).count(function (err, totalNotes) {
+                    db.collection(databaseName).find(clientsNote).count(function (err, totalNotes) {
 
-				doesItExist = totalNotes;
+                        doesItExist = totalNotes;
 
-			});
+                    });
 
-			db.collection(databaseName).count(function (err, totalNotes) {
-				//TODO DOMAIN HERE
-				try{
+                    db.collection(databaseName).count(function (err, totalNotes) {
 
-					if(totalNotes === 0) throw "Empty Database, None to remove";
-					if(doesItExist === 0) throw "No node with that ID";
+                        try {
 
-					doesItExist = 0;
+                            if (totalNotes === 0) throw "Empty Database, None to remove";
+                            if (doesItExist === 0) throw "No node with that ID";
 
-					db.collection(databaseName).remove(clientsNote);
+                            doesItExist = 0;
 
-					print("\nDeleted Note With ID : " + clientsNote.id + "\n");
+                            db.collection(databaseName).remove(clientsNote);
 
-				}catch(err){
+                            print("\nDeleted Note With ID : " + clientsNote.id + "\n");
 
-					print("ERROR : " + err);
+                        } catch (err) {
 
-				}
+                            print("ERROR : " + err);
 
-			});
+                        }
 
-		});
-
+                    });
+                }
+            });
+        }
 	});
 
 }
@@ -502,25 +515,29 @@ function updateNote(data){
 
 	try{
 
+	    validateID(data);
+
 		mongoClient.connect(url, function (err, db) {
-			//TODO DOMAIN HERE
-			if (err) throw err;
+            if (err){
+                console.log("updateNote : Error connecting to mongodb server!");
+            }else {
 
-			db.collection(databaseName, function (err, collection) {
-				//TODO DOMAIN HERE
-				if (err) throw err;
+                db.collection(databaseName, function (err, collection) {
+                    if (err){
+                        console.log("updateNote : Error accessing collection!");
+                    }else {
 
-				db.collection(databaseName).update({id:data.id},data,{ upsert: true });
-				print("works");
+                        db.collection(databaseName).update({id: data.id}, data, {upsert: true});
 
-			});
-
+                    }
+                });
+            }
 		});
 
 
 	}catch(err){
 
-		print("ERROR : " + err);
+		print("ERREOR : " + err);
 
 	}
 
@@ -644,7 +661,7 @@ function validateJson(note){
 	if(typeof note.id === "undefined") throw "ID is undefined!";
 	if(typeof note.title === "undefined") throw "Title is undefined!";
 	if(typeof note.text === "undefined") throw "Text is undefined!";
-	/*
+
 	if( note.id === null ) throw "id is null";
 	if( !isNumeric(note.id) ) throw "id is not a number";
 	if( note.title === null ) throw "title is NULL!";
@@ -652,7 +669,7 @@ function validateJson(note){
 	if( typeof note.title !== 'string' ) throw "title is not a string";
 	if( typeof note.text !== 'string' ) throw "text is not a string";
 	if( note.title === '' && note.text === '' ) throw "Json object is empty!";
-*/
+
 }
 
 
@@ -664,10 +681,33 @@ function validateJson(note){
 
 
 /*
-----------------------
-simple print function
-----------------------
-*/
+ ----------------------
+   check if {id: X} is valid
+   and a number only
+ ----------------------
+ */
+function validateID(data) {
+    if(!(data instanceof Object))       throw "Note is note an object or Json!";
+    if(typeof data === "undefined")     throw "ID is undefined!";
+    if( data.id === null )              throw "ID is null";
+    if( data.id === "")                 throw "ID a string!";
+    if( !isNumeric(data.id) )           throw "ID is not a number";
+    if(data.id < 0)                     throw "ID is Negative!";
+}
+
+
+
+
+
+
+
+
+
+/*
+ ----------------------
+ simple print function
+ ----------------------
+ */
 function print(text){
   return console.log(text);
 }
