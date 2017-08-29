@@ -1,6 +1,7 @@
 var socket;    
-var URL_SERVER = 'https://localhost:443';
+//var URL_SERVER = 'https://localhost:443';
 //var URL_SERVER = 'https://192.168.1.12:443';
+var URL_SERVER ='';// 'https://localhost:80';
 
 var title, 
 	noteText,
@@ -8,7 +9,9 @@ var title,
 	printButton,
 	clearBtn,
 	removeBtn,
-	idText;
+	idText,
+	ipaddress,
+	ipaddrBtn;
 
 var noteID = 0;
 
@@ -32,6 +35,12 @@ function setup() {
 	createCanvas(400,400)
 	background(50);
 
+	ipaddressfield(90);
+
+	ipButton();
+	
+
+
 	titleInput(0);
 	noteInput(60);
 	idInput(-30);
@@ -42,7 +51,7 @@ function setup() {
 	removeButton();
 
 
-  	setupSocket();
+  	
 	
 }
 function draw() {}
@@ -98,6 +107,22 @@ function idInput(pos){
 
 	idText = createInput();
 	idText.position(width/2, height/2 + pos);
+
+}
+
+
+
+
+
+
+/*
+----------------------
+----------------------
+*/
+function ipaddressfield(pos){
+
+	ipaddress = createInput();
+	ipaddress.position(width/2, height/2 + pos);
 
 }
 
@@ -232,6 +257,30 @@ function removeButton(){
 
 
 }
+
+
+
+
+
+
+/*
+
+----------------------
+
+----------------------
+*/
+function ipButton(){
+	var setIP = function(){
+		URL_SERVER = 'http://'+ ipaddress.value();
+			alert(URL_SERVER);
+			setupSocket();
+	}
+	ipaddrBtn = createButton('ip');
+	ipaddrBtn.position(width/2-50, height/2+90);
+	ipaddrBtn.mousePressed(setIP);
+
+}
+
 
 
 

@@ -26,7 +26,9 @@ var fs = require('fs');
 /*
 Global settings
 */
-var serverPort = 443;
+//var serverPort = 443;
+//var serverPort = 80;
+var serverPort = 3000;
 var databaseName = 'database'
 var url = "mongodb://mongo:27017/" + databaseName;
 var doesItExist = 0;
@@ -49,10 +51,12 @@ server setup
 ----------------------
 */
 var app = express();
-var server = https.createServer(options, app);
+//var server = https.createServer(options, app);
+var server = http.createServer(app);
 var io = require('socket.io')(server);
 
-opn('https://localhost:'+serverPort);
+//opn('https://localhost:'+serverPort);
+//opn('http://localhost:'+serverPort);
 
 /*
 desplying index.html on client 
@@ -73,17 +77,17 @@ for people who try to go to non https
 version of the client
 ----------------------
 */
-var redirect = express();
+/*var redirect = express();
 redirect.use(express.static(__dirname + "/404/")); //use static files in ROOT/public folder
 
 redirect.get("/", function(request, response){ //root dir
     response.send("You visited the wrong url please click here https://localhost:443");
 });
 
-redirect.listen(80, "127.0.0.1");
+redirect.listen(8080, "127.0.0.1");
 
 
-
+*/
 
 
 
