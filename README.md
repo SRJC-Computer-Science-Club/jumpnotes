@@ -1,7 +1,7 @@
 
 # JumpNote
 
-![Mockup](https://i.imgur.com/f2sGV4e.png)
+![Mockup](https://i.imgur.com/UtwebdQ.png)
 
 [![Stories in Ready][Issues In Progress]][Waffle.io] [![Stories in Needs Review][Issues Needs Review]][Waffle.io]
 
